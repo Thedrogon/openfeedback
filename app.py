@@ -4,6 +4,7 @@ from auth import auth_bp, login_required, admin_required
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from datetime import datetime
+from ml_utils import predict_sentiment
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'openfeed-secret'  # Keep your existing secret key
@@ -91,27 +92,29 @@ def get_company_logo(company_name):
         return f"/{company['logo']}"
     return "/static/logos/placeholder.png"
 
-def analyze_sentiment(text):
-    """Simple sentiment analysis"""
-    positive_words = [
-        'great', 'excellent', 'amazing', 'love', 'perfect', 'awesome',
-        'good', 'fantastic'
-    ]
-    negative_words = [
-        'bad', 'terrible', 'awful', 'hate', 'worst', 'poor',
-        'disappointing'
-    ]
 
-    text_lower = text.lower()
-    pos_score = sum(1 for word in positive_words if word in text_lower)
-    neg_score = sum(1 for word in negative_words if word in text_lower)
+#ADDED A NEW FUNCTION TO ANALYZE SENTIMENT USING VADER ML MODEL
+# def analyze_sentiment(text):
+#     """Simple sentiment analysis"""
+#     positive_words = [
+#         'great', 'excellent', 'amazing', 'love', 'perfect', 'awesome',
+#         'good', 'fantastic'
+#     ]
+#     negative_words = [
+#         'bad', 'terrible', 'awful', 'hate', 'worst', 'poor',
+#         'disappointing'
+#     ]
 
-    if pos_score > neg_score:
-        return "positive"
-    elif neg_score > pos_score:
-        return "negative"
-    else:
-        return "neutral"
+#     text_lower = text.lower()
+#     pos_score = sum(1 for word in positive_words if word in text_lower)
+#     neg_score = sum(1 for word in negative_words if word in text_lower)
+
+#     if pos_score > neg_score:
+#         return "positive"
+#     elif neg_score > pos_score:
+#         return "negative"
+#     else:
+#         return "neutral"
 
 @app.route('/')
 def index():
@@ -214,7 +217,7 @@ def submit_feedback():
     logo = get_company_logo(company_name)
 
     # Analyze sentiment
-    sentiment = analyze_sentiment(comment)
+    sentiment = predict_sentiment(comment) #NEW FUNCTION ADDED
 
     # Save feedback with user_id
     feedback = Feedback(
